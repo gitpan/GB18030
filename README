@@ -17,9 +17,9 @@ SYNOPSIS
 DESCRIPTION
 
       This software is "Yet Another JPerl" written by Perl.
-      We can write the script in GB18030 again.
+      We can write the script in GB18030.
 
-      This software is a beta version for the public comment.
+      This software treats GB18030 directly. Therefore, there is not UTF8 flag.
 
 INSTALLATION
 
@@ -40,8 +40,8 @@ MAKE OTHER
 
 PROGRAM COMPOSITION
 
-   GB18030.pm       --- source code filter for GB18030 script
-   Egb18030.pm      --- run-time routines for GB18030.pm
+   GB18030.pm   --- source code filter for GB18030 script
+   Egb18030.pm  --- run-time routines for GB18030.pm
    perl58.bat   --- find and run perl5.8  without %PATH% settings
    perl510.bat  --- find and run perl5.10 without %PATH% settings
 
@@ -181,10 +181,10 @@ points that are not mapped in any other manner. For example:
   U+00E2 --> 81 30 89 39
   U+00E3 --> 81 30 8A 30
 
-"GBK" IN THIS SOFTWARE
+"GB18030" IN THIS SOFTWARE
 
- The "GBK" in this software means widely codeset than general GBK.
-This software use two algorithms to handle GBK.
+ The "GB18030" in this software means widely codeset than general GB18030.
+This software use two algorithms to handle GB18030.
 
 * ALGORITHM #1
 

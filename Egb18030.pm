@@ -9,9 +9,9 @@ package Egb18030;
 
 use strict;
 use 5.00503;
-use vars qw($VERSION $_warning);
+use vars qw($VERSION $_warning $last_s_matched);
 
-$VERSION = sprintf '%d.%02d', q$Revision: 0.40 $ =~ m/(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.41 $ =~ m/(\d+)/xmsg;
 
 use Fcntl;
 use Symbol;
@@ -142,21 +142,18 @@ else {
 sub import() {}
 sub unimport() {}
 sub Egb18030::split(;$$$);
-sub Egb18030::tr($$$;$);
+sub Egb18030::tr($$$$;$);
 sub Egb18030::chop(@);
 sub Egb18030::index($$;$);
 sub Egb18030::rindex($$;$);
-sub Egb18030::lc($);
+sub Egb18030::lc(@);
 sub Egb18030::lc_();
-sub Egb18030::uc($);
+sub Egb18030::uc(@);
 sub Egb18030::uc_();
-sub Egb18030::shift_matched_var();
+sub Egb18030::capture($);
 sub Egb18030::ignorecase(@);
-sub Egb18030::chr($);
+sub Egb18030::chr(;$);
 sub Egb18030::chr_();
-sub Egb18030::ord($);
-sub Egb18030::ord_();
-sub Egb18030::reverse(@);
 sub Egb18030::r(;*@);
 sub Egb18030::w(;*@);
 sub Egb18030::x(;*@);
@@ -223,7 +220,10 @@ sub Egb18030::chdir(;$);
 sub Egb18030::do($);
 sub Egb18030::require(;$);
 
-sub GB18030::length;
+sub GB18030::ord(;$);
+sub GB18030::ord_();
+sub GB18030::reverse(@);
+sub GB18030::length(;$);
 sub GB18030::substr($$;$$);
 sub GB18030::index($$;$);
 sub GB18030::rindex($$;$);
@@ -430,11 +430,12 @@ sub Egb18030::split(;$$$) {
 #
 # GB18030 transliteration (tr///)
 #
-sub Egb18030::tr($$$;$) {
+sub Egb18030::tr($$$$;$) {
 
-    my $searchlist      = $_[1];
-    my $replacementlist = $_[2];
-    my $modifier        = $_[3] || '';
+    my $bind_operator   = $_[1];
+    my $searchlist      = $_[2];
+    my $replacementlist = $_[3];
+    my $modifier        = $_[4] || '';
 
     my @char            = $_[0] =~ m/\G ($q_char) /oxmsg;
     my @searchlist      = _charlist_tr($searchlist);
@@ -496,7 +497,13 @@ sub Egb18030::tr($$$;$) {
             }
         }
     }
-    return $tr;
+
+    if ($bind_operator =~ m/ !~ /oxms) {
+        return not $tr;
+    }
+    else {
+        return $tr;
+    }
 }
 
 #
@@ -506,7 +513,7 @@ sub Egb18030::chop(@) {
 
     my $chop;
     if (@_ == 0) {
-        my @char = m/\G ($q_char)/oxmsg;
+        my @char = m/\G ($q_char) /oxmsg;
         $chop = pop @char;
         $_ = join '', @char;
     }
@@ -572,7 +579,7 @@ sub Egb18030::rindex($$;$) {
 #
 # GB18030 lower case (with parameter)
 #
-sub Egb18030::lc($) {
+sub Egb18030::lc(@) {
 
     local $_ = shift if @_;
 
@@ -582,7 +589,7 @@ sub Egb18030::lc($) {
 
     local $^W = 0;
 
-    return join('', map {$lc{$_}||$_} m/\G ($q_char)/oxmsg);
+    return join('', map {$lc{$_}||$_} m/\G ($q_char) /oxmsg), @_;
 }
 
 #
@@ -596,13 +603,13 @@ sub Egb18030::lc_() {
 
     local $^W = 0;
 
-    return join('', map {$lc{$_}||$_} m/\G ($q_char)/oxmsg);
+    return join('', map {$lc{$_}||$_} m/\G ($q_char) /oxmsg);
 }
 
 #
 # GB18030 upper case (with parameter)
 #
-sub Egb18030::uc($) {
+sub Egb18030::uc(@) {
 
     local $_ = shift if @_;
 
@@ -612,7 +619,7 @@ sub Egb18030::uc($) {
 
     local $^W = 0;
 
-    return join('', map {$uc{$_}||$_} m/\G ($q_char) /oxmsg);
+    return join('', map {$uc{$_}||$_} m/\G ($q_char) /oxmsg), @_;
 }
 
 #
@@ -630,22 +637,16 @@ sub Egb18030::uc_() {
 }
 
 #
-# GB18030 shift matched variables
+# GB18030 regexp capture
 #
-sub Egb18030::shift_matched_var() {
+sub Egb18030::capture($) {
 
-    # $1 --> return
-    # $2 --> $1
-    # $3 --> $2
-    # $4 --> $3
-    my $dollar1 = $1;
-
-    local $@;
-    for (my $digit=1; eval "defined(\$$digit)"; $digit++) {
-        eval sprintf '*%d = *%d', $digit, $digit+1;
+    if ($last_s_matched and ($_[0] =~ m/\A [1-9][0-9]* \z/oxms)) {
+        return $_[0] + 1;
     }
-
-    return $dollar1;
+    else {
+        return $_[0];
+    }
 }
 
 #
@@ -736,10 +737,15 @@ sub Egb18030::ignorecase(@) {
             # rewrite character class or escape character
             elsif (my $char = {
                 '\D' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\d])',
-                '\H' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\h])',
                 '\S' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\s])',
-                '\V' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\v])',
                 '\W' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\w])',
+
+                '\H' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\x09\x20])',
+                '\V' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\x0A\x0B\x0C\x0D])',
+
+                '\h' => '[\x09\x20]',         # not include \xA0
+                '\v' => '[\x0A\x0B\x0C\x0D]', # not include \x85
+
                 }->{$char[$i]}
             ) {
                 $char[$i] = $char;
@@ -1078,15 +1084,18 @@ sub _charlist {
                 '\a' => "\a",
                 '\e' => "\e",
                 '\d' => '\d',
-                '\h' => '\h',
                 '\s' => '\s',
-                '\v' => '\v',
                 '\w' => '\w',
                 '\D' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\d])',
-                '\H' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\h])',
                 '\S' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\s])',
-                '\V' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\v])',
                 '\W' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\w])',
+
+                '\H' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\x09\x20])',
+                '\V' => '(?:[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE][\x00-\xFF]|[^\x0A\x0B\x0C\x0D])',
+
+                '\h' => '[\x09\x20]',         # not include \xA0
+                '\v' => '[\x0A\x0B\x0C\x0D]', # not include \x85
+
             }->{$1};
         }
         elsif ($char[$i] =~ m/\A \\ ($q_char) \z/oxms) {
@@ -1190,7 +1199,15 @@ sub _charlist {
         }
 
         # single character of single octet code
-        elsif ($char[$i] =~ m/\A (?: [\x00-\xFF] | \\d | \\h | \\s | \\v | \\w ) \z/oxms) {
+        elsif ($char[$i] =~ m/\A (?: \\h ) \z/oxms) {
+            push @singleoctet, "\x09", "\x20";
+            $i += 1;
+        }
+        elsif ($char[$i] =~ m/\A (?: \\v ) \z/oxms) {
+            push @singleoctet, "\x0A","\x0B","\x0C","\x0D";
+            $i += 1;
+        }
+        elsif ($char[$i] =~ m/\A (?: [\x00-\xFF] | \\d | \\s | \\w ) \z/oxms) {
             push @singleoctet, $char[$i];
             $i += 1;
         }
@@ -1301,7 +1318,7 @@ sub charlist_not_qr {
 #
 # GB18030 order to character (with parameter)
 #
-sub Egb18030::chr($) {
+sub Egb18030::chr(;$) {
 
     my $c = @_ ? $_[0] : $_;
 
@@ -1335,57 +1352,6 @@ sub Egb18030::chr_() {
             $c = int($c / 0x100);
         }
         return pack 'C*', @chr;
-    }
-}
-
-#
-# GB18030 character to order (with parameter)
-#
-sub Egb18030::ord($) {
-
-    local $_ = shift if @_;
-
-    if (m/\A ($q_char) /oxms) {
-        my @ord = unpack 'C*', $1;
-        my $ord = 0;
-        while (my $o = shift @ord) {
-            $ord = $ord * 0x100 + $o;
-        }
-        return $ord;
-    }
-    else {
-        return CORE::ord $_;
-    }
-}
-
-#
-# GB18030 character to order (without parameter)
-#
-sub Egb18030::ord_() {
-
-    if (m/\A ($q_char) /oxms) {
-        my @ord = unpack 'C*', $1;
-        my $ord = 0;
-        while (my $o = shift @ord) {
-            $ord = $ord * 0x100 + $o;
-        }
-        return $ord;
-    }
-    else {
-        return CORE::ord $_;
-    }
-}
-
-#
-# GB18030 reverse
-#
-sub Egb18030::reverse(@) {
-
-    if (wantarray) {
-        return CORE::reverse @_;
-    }
-    else {
-        return join '', CORE::reverse(join('',@_) =~ m/\G ($q_char) /oxmsg);
     }
 }
 
@@ -3513,6 +3479,7 @@ sub _MSWin32_5Cended_path {
 # do GB18030 file
 #
 sub Egb18030::do($) {
+
     my($filename) = @_;
 
     my $realfilename;
@@ -3574,6 +3541,7 @@ ITER_DO:
 # of ISBN 1-56592-149-6 Programming Perl, Second Edition.
 
 sub Egb18030::require(;$) {
+
     local $_ = shift if @_;
     return 1 if $INC{$_};
 
@@ -3630,13 +3598,65 @@ ITER_REQUIRE:
 }
 
 #
-# GB18030 length by character
+# GB18030 character to order (with parameter)
 #
-sub GB18030::length {
+sub GB18030::ord(;$) {
 
     local $_ = shift if @_;
 
-    return scalar m/\G ($q_char) /oxmsg;
+    if (m/\A ($q_char) /oxms) {
+        my @ord = unpack 'C*', $1;
+        my $ord = 0;
+        while (my $o = shift @ord) {
+            $ord = $ord * 0x100 + $o;
+        }
+        return $ord;
+    }
+    else {
+        return CORE::ord $_;
+    }
+}
+
+#
+# GB18030 character to order (without parameter)
+#
+sub GB18030::ord_() {
+
+    if (m/\A ($q_char) /oxms) {
+        my @ord = unpack 'C*', $1;
+        my $ord = 0;
+        while (my $o = shift @ord) {
+            $ord = $ord * 0x100 + $o;
+        }
+        return $ord;
+    }
+    else {
+        return CORE::ord $_;
+    }
+}
+
+#
+# GB18030 reverse
+#
+sub GB18030::reverse(@) {
+
+    if (wantarray) {
+        return CORE::reverse @_;
+    }
+    else {
+        return join '', CORE::reverse(join('',@_) =~ m/\G ($q_char) /oxmsg);
+    }
+}
+
+#
+# GB18030 length by character
+#
+sub GB18030::length(;$) {
+
+    local $_ = shift if @_;
+
+    local @_ = m/\G ($q_char) /oxmsg;
+    return scalar @_;
 }
 
 #
@@ -3644,24 +3664,30 @@ sub GB18030::length {
 #
 sub GB18030::substr ($$;$$) {
 
-    if (defined $_[3]) {
-        if (defined $_[4]) {
-            my(undef,$offset,$length,$replacement) = @_;
-            if ($_[0] =~ s/\A ((?:$q_char){$offset}) ((?:$q_char){0,$length}) \z/$1$replacement/xms) {
-                return $2;
-            }
+    my @char = $_[0] =~ m/\G ($q_char) /oxmsg;
+
+    # substr($string,$offset,$length,$replacement)
+    if (@_ == 4) {
+        my(undef,$offset,$length,$replacement) = @_;
+        my $substr = join '', splice(@char, $offset, $length, $replacement);
+        $_[0] = join '', @char;
+        return $substr;
+    }
+
+    # substr($string,$offset,$length)
+    elsif (@_ == 3) {
+        my(undef,$offset,$length) = @_;
+        return join '', (@char[$offset .. $#char])[0 .. $length-1];
+    }
+
+    # substr($string,$offset)
+    else {
+        my(undef,$offset) = @_;
+        if ($offset >= 0) {
+            return join '', @char[$offset .. $#char];
         }
         else {
-            my($expr,$offset,$length) = @_;
-            if ($expr =~ m/\A (?:$q_char){$offset} ((?:$q_char){0,$length}) \z/xms) {
-                return $1;
-            }
-        }
-    }
-    else {
-        my($expr,$offset) = @_;
-        if ($expr =~ m/\A (?:$q_char){$offset} (.*) \z/xms) {
-            return $1;
+            return join '', @char[($#char+$offset+1) .. $#char];
         }
     }
 
@@ -3675,10 +3701,10 @@ sub GB18030::index($$;$) {
 
     my $index;
     if (@_ == 3) {
-        $index = Egb18030::index($_[0],$_[1],$_[2]);
+        $index = Egb18030::index($_[0], $_[1], CORE::length(GB18030::substr($_[0], 0, $_[2])));
     }
     else {
-        $index = Egb18030::index($_[0],$_[1]);
+        $index = Egb18030::index($_[0], $_[1]);
     }
 
     if ($index == -1) {
@@ -3696,10 +3722,10 @@ sub GB18030::rindex($$;$) {
 
     my $rindex;
     if (@_ == 3) {
-        $rindex = Egb18030::rindex($_[0],$_[1],$_[2]);
+        $rindex = Egb18030::rindex($_[0], $_[1], CORE::length(GB18030::substr($_[0], 0, $_[2])));
     }
     else {
-        $rindex = Egb18030::rindex($_[0],$_[1]);
+        $rindex = Egb18030::rindex($_[0], $_[1]);
     }
 
     if ($rindex == -1) {
@@ -3736,13 +3762,10 @@ Egb18030 - Run-time routines for GB18030.pm
     Egb18030::lc_;
     Egb18030::uc(...);
     Egb18030::uc_;
-    Egb18030::shift_matched_var();
+    Egb18030::capture(...);
     Egb18030::ignorecase(...);
     Egb18030::chr(...);
     Egb18030::chr_;
-    Egb18030::ord(...);
-    Egb18030::ord_;
-    Egb18030::reverse(...);
     Egb18030::X ...;
     Egb18030::X_;
     Egb18030::glob(...);
@@ -3757,6 +3780,9 @@ Egb18030 - Run-time routines for GB18030.pm
     Egb18030::do(...);
     Egb18030::require(...);
 
+    GB18030::ord(...);
+    GB18030::ord_;
+    GB18030::reverse(...);
     GB18030::length(...);
     GB18030::substr(...);
     GB18030::index(...);
@@ -3831,13 +3857,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 =item Transliteration
 
-  $tr = Egb18030::tr($string,$searchlist,$replacementlist,$modifier);
-  $tr = Egb18030::tr($string,$searchlist,$replacementlist);
+  $tr = Egb18030::tr($variable,$bind_operator,$searchlist,$replacementlist,$modifier);
+  $tr = Egb18030::tr($variable,$bind_operator,$searchlist,$replacementlist);
 
   This function scans a GB18030 string character by character and replaces all
   occurrences of the characters found in $searchlist with the corresponding character
   in $replacementlist. It returns the number of characters replaced or deleted.
-  If no GB18030 string is specified via =~ operator, the $_ string is translated.
+  If no GB18030 string is specified via =~ operator, the $_ variable is translated.
   $modifier are:
 
   Modifier   Meaning
@@ -3896,17 +3922,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   This is the internal function implementing the \U escape in double-quoted
   strings.
 
-=item Shift matched variables
+=item Make capture number
 
-  $dollar1 = Egb18030::shift_matched_var();
+  $capturenumber = Egb18030::capture($string);
 
-  This function is internal use to s/ / /.
+  This function is internal use to m/ /i, s/ / /i, split and qr/ /i.
 
 =item Make ignore case string
 
   @ignorecase = Egb18030::ignorecase(@string);
 
-  This function is internal use to m/ /i, s/ / /i and qr/ /i.
+  This function is internal use to m/ /i, s/ / /i, split and qr/ /i.
 
 =item Make character
 
@@ -3916,33 +3942,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   This function returns the character represented by that $code in the character
   set. For example, Egb18030::chr(65) is "A" in either ASCII or GB18030, and
   Egb18030::chr(0x82a0) is a GB18030 HIRAGANA LETTER A. For the reverse of Egb18030::chr,
-  use Egb18030::ord.
-
-=item Order of Character
-
-  $ord = Egb18030::ord($string);
-  $ord = Egb18030::ord_;
-
-  This function returns the numeric value (ASCII or GB18030) of the first character
-  of $string. The return value is always unsigned.
-
-=item Reverse list or string
-
-  @reverse = Egb18030::reverse(@list);
-  $reverse = Egb18030::reverse(@list);
-
-  In list context, this function returns a list value consisting of the elements of
-  @list in the opposite order. The function can be used to create descending sequences:
-
-  for (Egb18030::reverse(1 .. 10)) { ... }
-
-  Because of the way hashes flatten into lists when passed as a @list, reverse can also
-  be used to invert a hash, presuming the values are unique:
-
-  %barfoo = Egb18030::reverse(%foobar);
-
-  In scalar context, the function concatenates all the elements of LIST and then returns
-  the reverse of that resulting string, character by character.
+  use GB18030::ord.
 
 =item File test operator -X
 
@@ -4192,6 +4192,32 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   it'll return true otherwise.
 
   See also do file.
+
+=item Order of Character
+
+  $ord = GB18030::ord($string);
+  $ord = GB18030::ord_;
+
+  This function returns the numeric value (ASCII or GB18030) of the first character
+  of $string. The return value is always unsigned.
+
+=item Reverse list or string
+
+  @reverse = GB18030::reverse(@list);
+  $reverse = GB18030::reverse(@list);
+
+  In list context, this function returns a list value consisting of the elements of
+  @list in the opposite order. The function can be used to create descending sequences:
+
+  for (GB18030::reverse(1 .. 10)) { ... }
+
+  Because of the way hashes flatten into lists when passed as a @list, reverse can also
+  be used to invert a hash, presuming the values are unique:
+
+  %barfoo = GB18030::reverse(%foobar);
+
+  In scalar context, the function concatenates all the elements of LIST and then returns
+  the reverse of that resulting string, character by character.
 
 =item length by GB18030 character
 
