@@ -66,7 +66,7 @@ GB 18030 IN WIKIPEDIA
 
 GB 18030 (2009.08.10 12:00:00 JST). In Wikipedia: The Free Encyclopedia.
 Retrieved from
-L<http://en.wikipedia.org/wiki/GB_18030>
+http://en.wikipedia.org/wiki/GB_18030
 
 GB18030 is the registered Internet name for the official character set of the
 People's Republic of China (PRC) superseding GB2312. This character set is
@@ -189,8 +189,7 @@ This software use two algorithms to handle GB18030.
 * ALGORITHM #1
 
  When the character is taken out of the octet string, it is necessary to
-distinguish a single octet character and the double octet character.
-The distinction is done only by first octet.
+distinguish a single octet character and the multiple octet character.
 
     Single octet code is:
       0x00-0x80 and 0xFF
@@ -207,7 +206,7 @@ The distinction is done only by first octet.
 
     MALFORMED single octet code is:
       0x81-0xFE
-      * Final octet of string like first octet of double octet code
+      * Final octet of string like first octet of multiple octet code
 
 See also code table:
 
@@ -329,10 +328,10 @@ See also code table:
 
     *MALFORMED* Single octet code
 
-Final octet of string like first octet of double octet code
+Final octet of string like first octet of multiple octet code
 
 Even if malformed, it is not ignored and not deleted automatically.
-For example, Esjis::chop function returns this octet.
+For example, Egb18030::chop function returns this octet.
 
    0 1 2 3 4 5 6 7 8 9 A B C D E F 
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
