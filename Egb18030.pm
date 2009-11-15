@@ -11,7 +11,7 @@ use strict;
 use 5.00503;
 use vars qw($VERSION $_warning);
 
-$VERSION = sprintf '%d.%02d', q$Revision: 0.43 $ =~ m/(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.44 $ =~ m/(\d+)/xmsg;
 
 use Fcntl;
 use Symbol;
@@ -173,6 +173,7 @@ sub Egb18030::capture($);
 sub Egb18030::ignorecase(@);
 sub Egb18030::chr(;$);
 sub Egb18030::chr_();
+sub Egb18030::filetest(@);
 sub Egb18030::r(;*@);
 sub Egb18030::w(;*@);
 sub Egb18030::x(;*@);
@@ -200,6 +201,7 @@ sub Egb18030::B(;*@);
 sub Egb18030::M(;*@);
 sub Egb18030::A(;*@);
 sub Egb18030::C(;*@);
+sub Egb18030::filetest_(@);
 sub Egb18030::r_();
 sub Egb18030::w_();
 sub Egb18030::x_();
@@ -1380,6 +1382,25 @@ sub Egb18030::chr_() {
 }
 
 #
+# GB18030 stacked file test expr
+#
+sub Egb18030::filetest (@) {
+
+    my $file     = pop @_;
+    my $filetest = substr(pop @_, 1);
+
+    unless (eval qq{Egb18030::$filetest(\$file)}) {
+        return '';
+    }
+    for my $filetest (reverse @_) {
+        unless (eval qq{ $filetest _ }) {
+            return '';
+        }
+    }
+    return 1;
+}
+
+#
 # GB18030 file test -r expr
 #
 sub Egb18030::r(;*@) {
@@ -2352,6 +2373,24 @@ sub Egb18030::C(;*@) {
         }
     }
     return wantarray ? (undef,@_) : undef;
+}
+
+#
+# GB18030 stacked file test $_
+#
+sub Egb18030::filetest_ (@) {
+
+    my $filetest = substr(pop @_, 1);
+
+    unless (eval qq{Egb18030::${filetest}_}) {
+        return '';
+    }
+    for my $filetest (reverse @_) {
+        unless (eval qq{ $filetest _ }) {
+            return '';
+        }
+    }
+    return 1;
 }
 
 #
