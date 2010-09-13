@@ -1,6 +1,6 @@
 NAME
 
-       GB18030 - "Yet Another JPerl" Source code filter for GB18030 script
+       GB18030 - Source code filter for GB18030 script
 
 SYNOPSIS
 
@@ -18,7 +18,7 @@ SYNOPSIS
 
 DESCRIPTION
 
-      This software is "Yet Another JPerl" written by Perl.
+      This software is "JPerl on the Modern Perl" written by Perl.
       We can write the script in GB18030.
 
       This software treats GB18030 directly. Therefore, there is not UTF8 flag.

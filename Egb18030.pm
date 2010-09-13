@@ -23,7 +23,7 @@ BEGIN {
 
 BEGIN { eval q{ use vars qw($VERSION $_warning) } }
 
-$VERSION = sprintf '%d.%02d', q$Revision: 0.63 $ =~ m/(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.64 $ =~ m/(\d+)/xmsg;
 
 # poor Symbol.pm - substitute of real Symbol.pm
 BEGIN {
@@ -262,8 +262,12 @@ sub Egb18030::tr($$$$;$);
 sub Egb18030::chop(@);
 sub Egb18030::index($$;$);
 sub Egb18030::rindex($$;$);
+sub Egb18030::lcfirst(@);
+sub Egb18030::lcfirst_();
 sub Egb18030::lc(@);
 sub Egb18030::lc_();
+sub Egb18030::ucfirst(@);
+sub Egb18030::ucfirst_();
 sub Egb18030::uc(@);
 sub Egb18030::uc_();
 sub Egb18030::capture($);
@@ -714,6 +718,27 @@ sub Egb18030::rindex($$;$) {
         );
     }
 
+    # lower case first with parameter
+    sub Egb18030::lcfirst(@) {
+        if (@_) {
+            my $s = shift @_;
+            if (@_ and wantarray) {
+                return Egb18030::lc(CORE::substr($s,0,1)) . CORE::substr($s,1), @_;
+            }
+            else {
+                return Egb18030::lc(CORE::substr($s,0,1)) . CORE::substr($s,1);
+            }
+        }
+        else {
+            return Egb18030::lc(CORE::substr($_,0,1)) . CORE::substr($_,1);
+        }
+    }
+
+    # lower case first without parameter
+    sub Egb18030::lcfirst_() {
+        return Egb18030::lc(CORE::substr($_,0,1)) . CORE::substr($_,1);
+    }
+
     # lower case with parameter
     sub Egb18030::lc(@) {
         if (@_) {
@@ -780,6 +805,27 @@ sub Egb18030::rindex($$;$) {
             "\xFD" => "\xDD", # LATIN LETTER Y WITH ACUTE
             "\xFE" => "\xDE", # LATIN LETTER THORN (Icelandic)
         );
+    }
+
+    # upper case first with parameter
+    sub Egb18030::ucfirst(@) {
+        if (@_) {
+            my $s = shift @_;
+            if (@_ and wantarray) {
+                return Egb18030::uc(CORE::substr($s,0,1)) . CORE::substr($s,1), @_;
+            }
+            else {
+                return Egb18030::uc(CORE::substr($s,0,1)) . CORE::substr($s,1);
+            }
+        }
+        else {
+            return Egb18030::uc(CORE::substr($_,0,1)) . CORE::substr($_,1);
+        }
+    }
+
+    # upper case first without parameter
+    sub Egb18030::ucfirst_() {
+        return Egb18030::uc(CORE::substr($_,0,1)) . CORE::substr($_,1);
     }
 
     # upper case with parameter
@@ -4244,8 +4290,12 @@ Egb18030 - Run-time routines for GB18030.pm
     Egb18030::rindex(...);
     Egb18030::lc(...);
     Egb18030::lc_;
+    Egb18030::lcfirst(...);
+    Egb18030::lcfirst_;
     Egb18030::uc(...);
     Egb18030::uc_;
+    Egb18030::ucfirst(...);
+    Egb18030::ucfirst_;
     Egb18030::capture(...);
     Egb18030::ignorecase(...);
     Egb18030::chr(...);
@@ -4390,6 +4440,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   Returns a lowercase version of GB18030 string (or $_, if omitted). This is the
   internal function implementing the \L escape in double-quoted strings.
 
+=item Lower case first character of string
+
+  $lcfirst = Egb18030::lcfirst($string);
+  $lcfirst = Egb18030::lcfirst_;
+
+  Returns a version of GB18030 string (or $_, if omitted) with the first character
+  lowercased. This is the internal function implementing the \l escape in double-
+  quoted strings.
+
 =item Upper case string
 
   $uc = Egb18030::uc($string);
@@ -4398,6 +4457,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   Returns an uppercased version of GB18030 string (or $_, if string is omitted).
   This is the internal function implementing the \U escape in double-quoted
   strings.
+
+=item Upper case first character of string
+
+  $ucfirst = Egb18030::ucfirst($string);
+  $ucfirst = Egb18030::ucfirst_;
+
+  Returns a version of GB18030 string (or $_, if omitted) with the first character
+  uppercased. This is the internal function implementing the \u escape in double-
+  quoted strings.
 
 =item Make capture number
 
