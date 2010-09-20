@@ -8,11 +8,13 @@ print "1..1\n";
 
 my $__FILE__ = __FILE__;
 
-if ($^O !~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
+my $chcp = `chcp`;
+if ($^O !~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms or $chcp !~ /932|936/oxms) {
     print "ok - 1 # SKIP $^X $__FILE__\n";
     exit;
 }
 
+my $chcp = `chcp`;
 open(FILE,'>F機能') || die "Can't open file: F機能\n";
 print FILE "1\n";
 close(FILE);
