@@ -4,6 +4,8 @@ die "This file is not encoded in GB18030.\n" if q{あ} ne "\x82\xa0";
 use GB18030;
 print "1..1\n";
 
+$_ = '';
+
 # unmatched [ ] in regexp
 # 「正規表現にマッチしない [ ] がある」
 eval { /プール/ };

@@ -6,10 +6,10 @@ die "This file is not encoded in GB18030.\n" if q{‚ } ne "\x82\xa0";
 my $__FILE__ = __FILE__;
 
 use Egb18030;
-print "1..24\n";
+print "1..23\n";
 
 if ($^O !~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
-    for my $tno (1..24) {
+    for my $tno (1..23) {
         print "ok - $tno # SKIP $^X $0\n";
     }
     exit;
@@ -300,96 +300,79 @@ else {
     }
 }
 
-if (-t ('file')) {
-    if (Egb18030::t(_)) {
-        print "ok - 18 Egb18030::t _ == -t _ $^X $__FILE__\n";
-    }
-    else {
-        print "not ok - 18 Egb18030::t _ == -t _ $^X $__FILE__\n";
-    }
-}
-else {
-    if (Egb18030::t(_)) {
-        print "not ok - 18 Egb18030::t _ == -t _ $^X $__FILE__\n";
-    }
-    else {
-        print "ok - 18 Egb18030::t _ == -t _ $^X $__FILE__\n";
-    }
-}
-
 if (-u ('file')) {
     if (Egb18030::u(_)) {
-        print "ok - 19 Egb18030::u _ == -u _ $^X $__FILE__\n";
+        print "ok - 18 Egb18030::u _ == -u _ $^X $__FILE__\n";
     }
     else {
-        print "not ok - 19 Egb18030::u _ == -u _ $^X $__FILE__\n";
+        print "not ok - 18 Egb18030::u _ == -u _ $^X $__FILE__\n";
     }
 }
 else {
     if (Egb18030::u(_)) {
-        print "not ok - 19 Egb18030::u _ == -u _ $^X $__FILE__\n";
+        print "not ok - 18 Egb18030::u _ == -u _ $^X $__FILE__\n";
     }
     else {
-        print "ok - 19 Egb18030::u _ == -u _ $^X $__FILE__\n";
+        print "ok - 18 Egb18030::u _ == -u _ $^X $__FILE__\n";
     }
 }
 
 if (-g ('file')) {
     if (Egb18030::g(_)) {
-        print "ok - 20 Egb18030::g _ == -g _ $^X $__FILE__\n";
+        print "ok - 19 Egb18030::g _ == -g _ $^X $__FILE__\n";
     }
     else {
-        print "not ok - 20 Egb18030::g _ == -g _ $^X $__FILE__\n";
+        print "not ok - 19 Egb18030::g _ == -g _ $^X $__FILE__\n";
     }
 }
 else {
     if (Egb18030::g(_)) {
-        print "not ok - 20 Egb18030::g _ == -g _ $^X $__FILE__\n";
+        print "not ok - 19 Egb18030::g _ == -g _ $^X $__FILE__\n";
     }
     else {
-        print "ok - 20 Egb18030::g _ == -g _ $^X $__FILE__\n";
+        print "ok - 19 Egb18030::g _ == -g _ $^X $__FILE__\n";
     }
 }
 
 if (-k ('file')) {
     if (Egb18030::k(_)) {
-        print "ok - 21 Egb18030::k _ == -k _ $^X $__FILE__\n";
+        print "ok - 20 Egb18030::k _ == -k _ $^X $__FILE__\n";
     }
     else {
-        print "not ok - 21 Egb18030::k _ == -k _ $^X $__FILE__\n";
+        print "not ok - 20 Egb18030::k _ == -k _ $^X $__FILE__\n";
     }
 }
 else {
     if (Egb18030::k(_)) {
-        print "not ok - 21 Egb18030::k _ == -k _ $^X $__FILE__\n";
+        print "not ok - 20 Egb18030::k _ == -k _ $^X $__FILE__\n";
     }
     else {
-        print "ok - 21 Egb18030::k _ == -k _ $^X $__FILE__\n";
+        print "ok - 20 Egb18030::k _ == -k _ $^X $__FILE__\n";
     }
 }
 
 $_ = -M 'file';
 if (Egb18030::M(_) == $_) {
-    print "ok - 22 Egb18030::M _ (@{[Egb18030::M _]}) == -M 'file' ($_) $^X $__FILE__\n";
+    print "ok - 21 Egb18030::M _ (@{[Egb18030::M _]}) == -M 'file' ($_) $^X $__FILE__\n";
 }
 else {
-    print "not ok - 22 Egb18030::M _ (@{[Egb18030::M _]}) == -M 'file' ($_) $^X $__FILE__\n";
+    print "not ok - 21 Egb18030::M _ (@{[Egb18030::M _]}) == -M 'file' ($_) $^X $__FILE__\n";
 }
 
 $_ = -A 'file';
 if (Egb18030::A(_) == $_) {
-    print "ok - 23 Egb18030::A _ (@{[Egb18030::A _]}) == -A 'file' ($_) $^X $__FILE__\n";
+    print "ok - 22 Egb18030::A _ (@{[Egb18030::A _]}) == -A 'file' ($_) $^X $__FILE__\n";
 }
 else {
-    print "not ok - 23 Egb18030::A _ (@{[Egb18030::A _]}) == -A 'file' ($_) $^X $__FILE__\n";
+    print "not ok - 22 Egb18030::A _ (@{[Egb18030::A _]}) == -A 'file' ($_) $^X $__FILE__\n";
 }
 
 $_ = -C 'file';
 if (Egb18030::C(_) == $_) {
-    print "ok - 24 Egb18030::C _ (@{[Egb18030::C _]}) == -C 'file' ($_) $^X $__FILE__\n";
+    print "ok - 23 Egb18030::C _ (@{[Egb18030::C _]}) == -C 'file' ($_) $^X $__FILE__\n";
 }
 else {
-    print "not ok - 24 Egb18030::C _ (@{[Egb18030::C _]}) == -C 'file' ($_) $^X $__FILE__\n";
+    print "not ok - 23 Egb18030::C _ (@{[Egb18030::C _]}) == -C 'file' ($_) $^X $__FILE__\n";
 }
 
 close(FILE);

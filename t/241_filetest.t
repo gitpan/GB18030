@@ -6,10 +6,10 @@ die "This file is not encoded in GB18030.\n" if q{‚ } ne "\x82\xa0";
 my $__FILE__ = __FILE__;
 
 use Egb18030;
-print "1..26\n";
+print "1..25\n";
 
 if ($^O !~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
-    for my $tno (1..26) {
+    for my $tno (1..25) {
         print "ok - $tno # SKIP $^X $0\n";
     }
     exit;
@@ -157,76 +157,68 @@ else {
 }
 
 $_ = 'file';
-if ((Egb18030::t_ ne '') == (-t ne '')) {
-    print "ok - 18 Egb18030::t_ == -t  $^X $__FILE__\n";
-}
-else {
-    print "not ok - 18 Egb18030::t_ == -t  $^X $__FILE__\n";
-}
-
-$_ = 'file';
 if ((Egb18030::u_ ne '') == (-u ne '')) {
-    print "ok - 19 Egb18030::u_ == -u  $^X $__FILE__\n";
+    print "ok - 18 Egb18030::u_ == -u  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 19 Egb18030::u_ == -u  $^X $__FILE__\n";
+    print "not ok - 18 Egb18030::u_ == -u  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::g_ ne '') == (-g ne '')) {
-    print "ok - 20 Egb18030::g_ == -g  $^X $__FILE__\n";
+    print "ok - 19 Egb18030::g_ == -g  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 20 Egb18030::g_ == -g  $^X $__FILE__\n";
+    print "not ok - 19 Egb18030::g_ == -g  $^X $__FILE__\n";
 }
 
 local $^W = 0;
 $_ = 'file';
 if ((Egb18030::k_ ne '') == (-k ne '')) {
-    print "ok - 21 Egb18030::k_ == -k  $^X $__FILE__\n";
+    print "ok - 20 Egb18030::k_ == -k  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 21 Egb18030::k_ == -k  $^X $__FILE__\n";
+    print "not ok - 20 Egb18030::k_ == -k  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::T_ ne '') == (-T ne '')) {
-    print "ok - 22 Egb18030::T_ == -T  $^X $__FILE__\n";
+    print "ok - 21 Egb18030::T_ == -T  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 22 Egb18030::T_ == -T  $^X $__FILE__\n";
+    print "not ok - 21 Egb18030::T_ == -T  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::B_ ne '') == (-B ne '')) {
-    print "ok - 23 Egb18030::B_ == -B  $^X $__FILE__\n";
+    print "ok - 22 Egb18030::B_ == -B  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 23 Egb18030::B_ == -B  $^X $__FILE__\n";
+    print "not ok - 22 Egb18030::B_ == -B  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::M_ ne '') == (-M ne '')) {
-    print "ok - 24 Egb18030::M_ == -M  $^X $__FILE__\n";
+    print "ok - 23 Egb18030::M_ == -M  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 24 Egb18030::M_ == -M  $^X $__FILE__\n";
+    print "not ok - 23 Egb18030::M_ == -M  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::A_ ne '') == (-A ne '')) {
-    print "ok - 25 Egb18030::A_ == -A  $^X $__FILE__\n";
+    print "ok - 24 Egb18030::A_ == -A  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 25 Egb18030::A_ == -A  $^X $__FILE__\n";
+    print "not ok - 24 Egb18030::A_ == -A  $^X $__FILE__\n";
 }
 
 $_ = 'file';
 if ((Egb18030::C_ ne '') == (-C ne '')) {
-    print "ok - 26 Egb18030::C_ == -C  $^X $__FILE__\n";
+    print "ok - 25 Egb18030::C_ == -C  $^X $__FILE__\n";
 }
 else {
-    print "not ok - 26 Egb18030::C_ == -C  $^X $__FILE__\n";
+    print "not ok - 25 Egb18030::C_ == -C  $^X $__FILE__\n";
 }
 
 close(FILE);
